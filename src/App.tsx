@@ -39,6 +39,8 @@ import { FullAlarmModal } from './components/FullAlarmModal';
 import { ExportSyncModal } from './components/ExportSyncModal';
 import { AndroidDownloadModal } from './components/AndroidDownloadModal';
 import { AutoThemeSettingsModal } from './components/AutoThemeSettingsModal';
+import { BackgroundImageModal, BackgroundConfig } from './components/BackgroundImageModal';
+import { SettingsModal } from './components/SettingsModal';
 import { AutoThemeConfig, evaluateAutoTheme } from './utils/autoTheme';
 
 export default function App() {
@@ -64,6 +66,30 @@ export default function App() {
     const saved = localStorage.getItem('ff_theme');
     return (saved as ThemeMode) || 'dark';
   });
+
+  const [bgConfig, setBgConfig] = useState<BackgroundConfig>(() => {
+    const saved = localStorage.getItem('ff_bg_config');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return {
+      enabled: true,
+      imageUrl: 'https://images.unsplash.com/photo-1511497584788-876761c11969?auto=format&fit=crop&w=1920&q=80',
+      opacity: 0.35,
+      blur: 2,
+      overlayDim: 0.2,
+      presetName: 'Misty Pine Forest',
+    };
+  });
+
+  const [isBgImageModalOpen, setIsBgImageModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('ff_bg_config', JSON.stringify(bgConfig));
+  }, [bgConfig]);
 
   const [autoThemeConfig, setAutoThemeConfig] = useState<AutoThemeConfig>(() => {
     const saved = localStorage.getItem('ff_auto_theme');
@@ -281,7 +307,7 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 font-sans overflow-x-hidden ${
+      className={`min-h-screen transition-colors duration-300 font-sans overflow-x-hidden relative ${
         activeTheme === 'light'
           ? 'bg-[#FAFAF8] text-[#2F3A45]'
           : activeTheme === 'amoled'
@@ -289,6 +315,24 @@ export default function App() {
           : 'bg-[#1E1F22] text-[#F3F4F6]'
       }`}
     >
+      {/* Background Wallpaper Layer */}
+      {bgConfig.enabled && bgConfig.imageUrl && (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-all duration-500"
+            style={{
+              backgroundImage: `url("${bgConfig.imageUrl}")`,
+              opacity: bgConfig.opacity,
+              filter: `blur(${bgConfig.blur}px)`,
+            }}
+          />
+          <div
+            className="absolute inset-0 bg-black transition-opacity duration-500"
+            style={{ opacity: bgConfig.overlayDim }}
+          />
+        </div>
+      )}
+
       {/* Outer Container or Android Mobile Frame Simulator Wrapper */}
       <div className={isMobileFrame ? 'p-2 sm:p-5 flex justify-center items-center min-h-screen bg-[#1A1C1E] overflow-x-hidden' : 'w-full overflow-x-hidden'}>
         <div
@@ -322,13 +366,19 @@ export default function App() {
               setIsEventModalOpen(true);
             }}
             onOpenAndroidDownload={() => setIsAndroidDownloadOpen(true)}
+            onOpenBgImageModal={() => setIsBgImageModalOpen(true)}
+            onOpenSettings={() => setIsSettingsModalOpen(true)}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             events={events}
+            habits={habits}
             onSelectEvent={(e) => {
               setEditingEvent(e);
               setIsEventModalOpen(true);
             }}
+            onToggleEventComplete={handleToggleEventComplete}
+            onToggleHabitComplete={handleToggleHabit}
+            onTriggerTestAlarm={(e) => setAlarmEvent(e || events[0] || null)}
             autoThemeConfig={autoThemeConfig}
             onOpenAutoThemeSettings={() => setIsAutoThemeModalOpen(true)}
             onToggleAutoTheme={() => setAutoThemeConfig((prev) => ({ ...prev, autoEnabled: !prev.autoEnabled }))}
@@ -564,6 +614,46 @@ export default function App() {
         currentActiveTheme={activeTheme}
         onSetManualTheme={handleSetTheme}
         onClearOverride={handleClearOverride}
+      />
+
+      <BackgroundImageModal
+        isOpen={isBgImageModalOpen}
+        onClose={() => setIsBgImageModalOpen(false)}
+        config={bgConfig}
+        onChangeConfig={(newCfg) => setBgConfig(newCfg)}
+        onOpenAndroidGuide={() => {
+          setIsBgImageModalOpen(false);
+          setIsAndroidDownloadOpen(true);
+        }}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        theme={activeTheme}
+        onSelectTheme={handleSetTheme}
+        bgConfig={bgConfig}
+        onChangeBgConfig={(newCfg) => setBgConfig(newCfg)}
+        autoThemeConfig={autoThemeConfig}
+        onToggleAutoTheme={() => {
+          setAutoThemeConfig({ ...autoThemeConfig, autoEnabled: !autoThemeConfig.autoEnabled });
+        }}
+        onOpenAutoThemeModal={() => {
+          setIsSettingsModalOpen(false);
+          setIsAutoThemeModalOpen(true);
+        }}
+        isMobileFrame={isMobileFrame}
+        onToggleMobileFrame={() => setIsMobileFrame(!isMobileFrame)}
+        onOpenAndroidGuide={() => {
+          setIsSettingsModalOpen(false);
+          setIsAndroidDownloadOpen(true);
+        }}
+        onOpenExportSync={() => {
+          setIsSettingsModalOpen(false);
+          setIsExportModalOpen(true);
+        }}
+        onTriggerTestAlarm={() => setAlarmEvent(events[0] || null)}
+        onResetData={handleResetSampleData}
       />
     </div>
   );
