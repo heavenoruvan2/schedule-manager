@@ -1,0 +1,10 @@
+{
+  "name": "Remix: FocusFlow",
+  "description": "AI-powered scheduling, productivity, and focus assistant for Android and web with intelligent day organization, focus mode app blocking, home screen widgets, and calendar views.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

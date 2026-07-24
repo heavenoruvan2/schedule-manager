@@ -1,0 +1,25 @@
+{
+  "short_name": "FocusFlow",
+  "name": "FocusFlow: AI Productivity & Focus Assistant",
+  "description": "AI-powered scheduling, focus mode app blocker, calming soundscapes, and calendar app for Android and Web.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1E1F22",
+  "theme_color": "#7FAF8E",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["productivity", "utilities", "lifestyle"]
+}
